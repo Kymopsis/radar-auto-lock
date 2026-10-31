@@ -1,0 +1,35 @@
+name: Something does not work
+description: Wiring, flashing, radar or keyboard problem
+labels: [bug]
+body:
+  - type: dropdown
+    id: variant
+    attributes:
+      label: Firmware
+      options:
+        - USB keyboard
+        - Bluetooth keyboard
+    validations:
+      required: true
+  - type: input
+    id: hardware
+    attributes:
+      label: Hardware and computer
+      description: ESP32 board, radar kit, and your OS (Windows 11, macOS 15, Ubuntu 24.04 ...)
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Firmware version or commit
+  - type: textarea
+    id: what
+    attributes:
+      label: What happens, and what you expected
+    validations:
+      required: true
+  - type: textarea
+    id: log
+    attributes:
+      label: Output of the `status` command and the serial log
+      render: text

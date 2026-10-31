@@ -1,0 +1,38 @@
+menu "Radar Auto-Lock"
+
+    choice AUTOLOCK_HID
+        prompt "Keyboard link to the computer"
+        default AUTOLOCK_HID_USB
+        help
+            USB: plug the board's native USB port into the computer. One cable
+            powers the board, sends the lock keys and can wake a sleeping PC.
+            Bluetooth LE: pair the board like a wireless keyboard and power it
+            from any USB charger.
+
+        config AUTOLOCK_HID_USB
+            bool "USB keyboard"
+            depends on SOC_USB_OTG_SUPPORTED
+        config AUTOLOCK_HID_BLE
+            bool "Bluetooth LE keyboard"
+            depends on BT_NIMBLE_ENABLED
+    endchoice
+
+    config AUTOLOCK_RADAR_TX_GPIO
+        int "ESP32 TX to radar RX0"
+        default 17
+    config AUTOLOCK_RADAR_RX_GPIO
+        int "ESP32 RX from radar TX0"
+        default 18
+    config AUTOLOCK_RADAR_RST_GPIO
+        int "Radar RST (active low), -1 = not wired"
+        default 4
+    config AUTOLOCK_LED_GPIO
+        int "On-board RGB LED (WS2812) data pin, -1 = none"
+        default 48
+        help
+            48 on most ESP32-S3 DevKitC-1 style boards, 38 on some newer ones.
+    config AUTOLOCK_BUTTON_GPIO
+        int "Button (the board's BOOT button)"
+        default 0
+
+endmenu

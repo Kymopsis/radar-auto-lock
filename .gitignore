@@ -1,0 +1,19 @@
+# ESP-IDF build output and local config
+firmware/build/
+firmware/build-*/
+firmware/managed_components/
+firmware/sdkconfig
+firmware/sdkconfig.old
+*.bin
+*.elf
+*.map
+
+# Python
+__pycache__/
+.venv/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

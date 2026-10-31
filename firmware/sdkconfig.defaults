@@ -1,0 +1,17 @@
+# Radar Auto-Lock: any ESP32-S3 board (tested layout: N16R8 dual USB-C)
+CONFIG_IDF_TARGET="esp32s3"
+CONFIG_ESPTOOLPY_FLASHSIZE_4MB=y
+CONFIG_PARTITION_TABLE_SINGLE_APP_LARGE=y
+
+# Logs and the settings console live on UART0 = the board's "COM"/"UART" USB-C
+# port. The native "USB" port is the keyboard.
+CONFIG_ESP_CONSOLE_UART_DEFAULT=y
+CONFIG_ESP_CONSOLE_SECONDARY_NONE=y
+
+CONFIG_FREERTOS_HZ=1000
+
+# Keyboard link: USB (default). sdkconfig.defaults.ble switches to Bluetooth LE.
+CONFIG_AUTOLOCK_HID_USB=y
+CONFIG_TINYUSB_HID_COUNT=1
+CONFIG_TINYUSB_DESC_PRODUCT_STRING="Radar Auto-Lock"
+CONFIG_TINYUSB_DESC_MANUFACTURER_STRING="Kymopsis"

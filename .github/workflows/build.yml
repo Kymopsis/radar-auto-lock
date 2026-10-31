@@ -1,0 +1,94 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  firmware:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        variant: [usb, ble]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build with ESP-IDF (${{ matrix.variant }})
+        uses: espressif/esp-idf-ci-action@v1
+        with:
+          esp_idf_version: v6.0.2
+          target: esp32s3
+          path: firmware
+          command: >-
+            if [ "${{ matrix.variant }}" = "ble" ]; then
+              DEFAULTS="sdkconfig.defaults;sdkconfig.defaults.ble";
+            else
+              DEFAULTS="sdkconfig.defaults";
+            fi &&
+            idf.py -B build-${{ matrix.variant }} -D SDKCONFIG=build-${{ matrix.variant }}/sdkconfig
+            -D SDKCONFIG_DEFAULTS="$DEFAULTS" build &&
+            cd build-${{ matrix.variant }} &&
+            python -m esptool --chip esp32s3 merge-bin -o radar-auto-lock-${{ matrix.variant }}.bin @flash_args
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: radar-auto-lock-${{ matrix.variant }}
+          path: firmware/build-${{ matrix.variant }}/radar-auto-lock-${{ matrix.variant }}.bin
+
+  host-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Radar protocol
+        run: |
+          cd firmware/components/radar_link/test
+          gcc -std=c11 -Wall -Wextra -Werror -I../include ../radar_protocol.c test_radar_protocol.c -lm -o t && ./t
+      - name: Presence logic
+        run: |
+          cd firmware/components/presence/test
+          gcc -std=c11 -Wall -Wextra -Werror -I../include ../presence.c test_presence.c -lm -o t && ./t
+
+  enclosure:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Regenerate STL files from the CadQuery script
+        run: |
+          pip install --quiet cadquery
+          cd enclosure && python enclosure.py
+
+  gitleaks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Scan for secrets
+        run: |
+          curl -sSL https://github.com/gitleaks/gitleaks/releases/download/v8.24.3/gitleaks_8.24.3_linux_x64.tar.gz | tar xz gitleaks
+          ./gitleaks detect --source . --redact --verbose
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [firmware, host-tests, gitleaks]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*.bin
+          generate_release_notes: true
