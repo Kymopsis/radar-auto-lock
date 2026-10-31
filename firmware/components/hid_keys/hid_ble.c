@@ -60,6 +60,7 @@ static esp_hid_device_config_t s_cfg = {
 
 static esp_hidd_dev_t *s_dev;
 static volatile bool s_connected;
+static volatile bool s_encrypted; /* reports are only accepted on an encrypted link */
 
 static void adv_start(void);
 
@@ -81,6 +82,7 @@ static int gap_event(struct ble_gap_event *event, void *arg)
         return 0;
     case BLE_GAP_EVENT_ENC_CHANGE:
         ESP_LOGI(TAG, "encryption %s", event->enc_change.status == 0 ? "on" : "failed");
+        s_encrypted = event->enc_change.status == 0;
         return 0;
     case BLE_GAP_EVENT_REPEAT_PAIRING:
         /* The computer lost its key (e.g. "Remove device"): accept a fresh pairing. */
@@ -140,6 +142,7 @@ static void hidd_event(void *handler_args, esp_event_base_t base, int32_t id, vo
         break;
     case ESP_HIDD_DISCONNECT_EVENT:
         s_connected = false;
+        s_encrypted = false;
         ESP_LOGI(TAG, "computer disconnected");
         adv_start();
         break;
@@ -188,19 +191,30 @@ esp_err_t hid_keys_init(const char *device_name)
 
 hid_link_state_t hid_keys_state(void)
 {
-    return s_connected ? HID_LINK_READY : HID_LINK_DOWN;
+    return (s_connected && s_encrypted) ? HID_LINK_READY : HID_LINK_DOWN;
 }
 
 esp_err_t hid_keys_combo(uint8_t modifiers, uint8_t keycode)
 {
-    ESP_RETURN_ON_FALSE(s_connected, ESP_ERR_INVALID_STATE, TAG, "not connected");
+    ESP_RETURN_ON_FALSE(hid_keys_state() == HID_LINK_READY, ESP_ERR_INVALID_STATE, TAG,
+                        "not connected");
     esp_err_t err = send_report(modifiers, 0);
     vTaskDelay(pdMS_TO_TICKS(KEY_GAP_MS));
     if (err == ESP_OK) {
         err = send_report(modifiers, keycode);
         vTaskDelay(pdMS_TO_TICKS(KEY_GAP_MS));
     }
-    esp_err_t rel = send_report(0, 0);
+    /* Always release, even after an error, and retry so no modifier stays held. */
+    esp_err_t rel = ESP_FAIL;
+    for (int i = 0; i < 5 && rel != ESP_OK; ++i) {
+        rel = send_report(0, 0);
+        if (rel != ESP_OK) {
+            vTaskDelay(pdMS_TO_TICKS(20));
+        }
+    }
+    if (rel != ESP_OK) {
+        ESP_LOGW(TAG, "key release failed: %s", esp_err_to_name(rel));
+    }
     return err != ESP_OK ? err : rel;
 }
 

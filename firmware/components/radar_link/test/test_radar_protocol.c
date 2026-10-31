@@ -141,7 +141,7 @@ static void test_concatenated_3d_and_cloud(void)
     assert(fabsf(event.cloud[0].x_m - 1.0f) < 0.001f);
 }
 
-static void make_hlk_item(uint8_t *item, float x, float y, float z, int32_t dop, int32_t id)
+static void make_20b_item(uint8_t *item, float x, float y, float z, int32_t dop, int32_t id)
 {
     put_f32_le(item, x);
     put_f32_le(item + 4, y);
@@ -150,17 +150,17 @@ static void make_hlk_item(uint8_t *item, float x, float y, float z, int32_t dop,
     put_u32_le(item + 16, (uint32_t)id);
 }
 
-static void test_hlk_20byte_target(void)
+static void test_20byte_target(void)
 {
     radar_tf_decoder_t decoder;
     radar_wire_event_t event;
     uint8_t payload[24], bytes[64];
     radar_tf_decoder_init(&decoder);
     put_u32_le(payload, 1);
-    make_hlk_item(payload + 4, 0.6f, 0.8f, 0.0f, -3, 7);
+    make_20b_item(payload + 4, 0.6f, 0.8f, 0.0f, -3, 7);
     const size_t length = frame(bytes, RADAR_TF_TYPE_TARGET, payload, sizeof(payload));
     assert(feed(&decoder, bytes, length, &event));
-    assert(event.mode == RADAR_WIRE_HLK && event.has_target_sample && event.sample.present);
+    assert(event.mode == RADAR_WIRE_20B && event.has_target_sample && event.sample.present);
     assert(event.sample.azimuth_ok && event.sample.track_id == 7);
     assert(!event.sample.speed_mps_valid && event.sample.doppler_raw == -3);
     assert(fabsf(event.sample.distance_m - 1.0f) < 0.001f);
@@ -175,8 +175,8 @@ static void test_nearest_cluster_wins(void)
     radar_tf_decoder_init(&decoder);
     put_u32_le(payload, 2);
     /* Nearest clustered target wins (id=1 closer than id=2). */
-    make_hlk_item(payload + 4, 0.25f, 0.20f, 0.10f, 0, 1);
-    make_hlk_item(payload + 24, 0.30f, 1.20f, 0.40f, 0, 2);
+    make_20b_item(payload + 4, 0.25f, 0.20f, 0.10f, 0, 1);
+    make_20b_item(payload + 24, 0.30f, 1.20f, 0.40f, 0, 2);
     const size_t length = frame(bytes, RADAR_TF_TYPE_TARGET, payload, sizeof(payload));
     assert(feed(&decoder, bytes, length, &event));
     assert(event.sample.present && event.sample.azimuth_ok);
@@ -211,7 +211,7 @@ int main(void)
 {
     test_fragmented_2d_and_empty();
     test_concatenated_3d_and_cloud();
-    test_hlk_20byte_target();
+    test_20byte_target();
     test_nearest_cluster_wins();
     test_bad_checksums_unknown_and_resync();
     puts("radar protocol tests: PASS");

@@ -24,9 +24,14 @@ Bluetooth build: pair it first.
 `set wake on`. On Windows with "Windows Hello face", the camera then signs you
 in. If the PC was asleep, see [waking a sleeping PC](setup.md#waking-a-sleeping-pc-usb-only).
 
+**Win + L does nothing on my work PC.**
+Your IT may have disabled locking with Win + L (Group Policy
+"DisableLockWorkstation"). The board can only press keys; ask IT or use a
+personal PC.
+
 **Is this secure?**
 It locks your PC for you; it cannot unlock it and never types anything except
-the lock shortcut and Shift. Treat it as a convenience. Lock manually when it
+the lock shortcut (Win + L, Ctrl + Cmd + Q or Super + L) and a Shift tap. Treat it as a convenience. Lock manually when it
 matters.
 
 **Can it see through the case?**

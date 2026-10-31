@@ -21,8 +21,10 @@ Print the case, the lid and **one** clip that matches your screen (or the desk f
 | Clip, 20 mm | [clip-20mm.stl](clip-20mm.stl) | Thicker monitors |
 | Desk foot | [desk-foot.stl](desk-foot.stl) | Stand it on the desk under the monitor instead (tilts up 6°) |
 
-Measure your screen's top edge where the clip will sit. The rear leg leans in
-4° and flexes, so a clip grips edges up to about 2 mm thicker than its size.
+Measure your screen's top edge where the clip will sit and pick the clip with
+that number or the next size up. The rear leg leans in 4° (the gap at its foot
+is about 2 mm narrower) and flexes, so the clip grips a slightly thinner edge
+too.
 
 ## Printing
 
@@ -50,6 +52,6 @@ python enclosure.py
 
 ## License
 
-[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). You may print,
+[CC BY 4.0](LICENSE). You may print,
 modify and share the files, including commercially, as long as you credit
 Kymopsis.

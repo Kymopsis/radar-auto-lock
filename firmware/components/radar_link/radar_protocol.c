@@ -8,7 +8,7 @@
 #endif
 
 #define RADAR_ITEM_2D  16u
-#define RADAR_ITEM_HLK 20u
+#define RADAR_ITEM_20B 20u
 #define RADAR_ITEM_3D  24u
 
 static uint16_t item_stride(radar_wire_mode_t mode)
@@ -16,8 +16,8 @@ static uint16_t item_stride(radar_wire_mode_t mode)
     switch (mode) {
     case RADAR_WIRE_2D:
         return RADAR_ITEM_2D;
-    case RADAR_WIRE_HLK:
-        return RADAR_ITEM_HLK;
+    case RADAR_WIRE_20B:
+        return RADAR_ITEM_20B;
     case RADAR_WIRE_3D:
         return RADAR_ITEM_3D;
     default:
@@ -80,8 +80,8 @@ static radar_wire_mode_t detect_mode(const uint8_t *payload, uint16_t length,
         if (count * RADAR_ITEM_2D == body) {
             return RADAR_WIRE_2D;
         }
-        if (count * RADAR_ITEM_HLK == body) {
-            return RADAR_WIRE_HLK;
+        if (count * RADAR_ITEM_20B == body) {
+            return RADAR_WIRE_20B;
         }
         if (count * RADAR_ITEM_3D == body) {
             return RADAR_WIRE_3D;
@@ -91,7 +91,7 @@ static radar_wire_mode_t detect_mode(const uint8_t *payload, uint16_t length,
     return RADAR_WIRE_UNKNOWN;
 }
 
-/* Power-supply issues fixed: pick nearest clustered target from 0x0A04 only. */
+/* Targets outside this range are ignored; the nearest one is reported. */
 #define RADAR_RANGE_MIN_M 0.05f
 #define RADAR_RANGE_MAX_M 8.00f
 
@@ -100,7 +100,7 @@ static int32_t read_track_id(const uint8_t *item, radar_wire_mode_t mode)
     if (mode == RADAR_WIRE_3D) {
         return read_i32_le(item + 12);
     }
-    if (mode == RADAR_WIRE_HLK) {
+    if (mode == RADAR_WIRE_20B) {
         return read_i32_le(item + 16);
     }
     return read_i32_le(item + 12); /* 2D */
@@ -110,7 +110,7 @@ static void fill_sample_from_item(radar_wire_sample_t *sample, const uint8_t *it
                                   radar_wire_mode_t mode, float x, float y, float z,
                                   float distance, int32_t track_id)
 {
-    const bool has_z = mode == RADAR_WIRE_3D || mode == RADAR_WIRE_HLK;
+    const bool has_z = mode == RADAR_WIRE_3D || mode == RADAR_WIRE_20B;
     sample->present = true;
     sample->x_m = x;
     sample->y_m = y;
@@ -124,7 +124,7 @@ static void fill_sample_from_item(radar_wire_sample_t *sample, const uint8_t *it
     if (mode == RADAR_WIRE_3D) {
         sample->speed_mps_valid = true;
         sample->radial_speed_mps = read_f32_le(item + 20);
-    } else if (mode == RADAR_WIRE_HLK) {
+    } else if (mode == RADAR_WIRE_20B) {
         sample->doppler_raw = read_i32_le(item + 12);
     } else {
         sample->doppler_raw = read_i32_le(item + 8);
@@ -154,7 +154,7 @@ static bool parse_target(radar_tf_decoder_t *decoder, const uint8_t *payload, ui
         return true;
     }
 
-    const bool has_z = mode == RADAR_WIRE_3D || mode == RADAR_WIRE_HLK;
+    const bool has_z = mode == RADAR_WIRE_3D || mode == RADAR_WIRE_20B;
     int chosen = -1;
     float best_dist = INFINITY;
 
@@ -206,7 +206,7 @@ static bool parse_cloud(const uint8_t *payload, uint16_t length, radar_wire_mode
     if (stride == 0 || declared > INT32_MAX || declared * stride != body) {
         return false;
     }
-    const bool has_z = mode == RADAR_WIRE_3D || mode == RADAR_WIRE_HLK;
+    const bool has_z = mode == RADAR_WIRE_3D || mode == RADAR_WIRE_20B;
     event->cloud_count = 0;
     for (uint32_t i = 0; i < declared && event->cloud_count < RADAR_MAX_CLOUD; ++i) {
         const uint8_t *item = payload + 4 + i * stride;
@@ -249,7 +249,6 @@ void radar_tf_decoder_init(radar_tf_decoder_t *decoder)
 {
     memset(decoder, 0, sizeof(*decoder));
     decoder->state = RADAR_TF_WAIT_SOF;
-    decoder->latched_track_id = -1;
 }
 
 bool radar_tf_decoder_feed(radar_tf_decoder_t *decoder, uint8_t byte, radar_wire_event_t *event)

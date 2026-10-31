@@ -18,9 +18,9 @@ extern "C" {
 #endif
 
 typedef struct {
-    bool link_ok;                /* a valid frame arrived in the last 2 s */
+    bool link_ok;                /* a decodable target/cloud frame arrived in the last 1.5 s */
     int baud;                    /* UART rate in use */
-    radar_wire_mode_t mode;      /* 2D / 3D / HLK payload layout */
+    radar_wire_mode_t mode;      /* 16, 20 or 24 bytes per item */
     uint32_t frames;             /* valid frames since boot */
     uint32_t rx_bytes;           /* raw bytes since boot */
     int64_t target_ms;           /* time of the latest target frame, 0 = never */

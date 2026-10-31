@@ -117,7 +117,17 @@ esp_err_t hid_keys_combo(uint8_t modifiers, uint8_t keycode)
         vTaskDelay(pdMS_TO_TICKS(KEY_GAP_MS));
     }
     /* Always try to release, even after an error. */
-    esp_err_t rel = send_report(0, 0);
+    /* Always release, even after an error, and retry so no modifier stays held. */
+    esp_err_t rel = ESP_FAIL;
+    for (int i = 0; i < 5 && rel != ESP_OK; ++i) {
+        rel = send_report(0, 0);
+        if (rel != ESP_OK) {
+            vTaskDelay(pdMS_TO_TICKS(20));
+        }
+    }
+    if (rel != ESP_OK) {
+        ESP_LOGW(TAG, "key release failed: %s", esp_err_to_name(rel));
+    }
     return err != ESP_OK ? err : rel;
 }
 

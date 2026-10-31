@@ -5,6 +5,7 @@
  */
 
 #include <inttypes.h>
+#include <stdatomic.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -26,7 +27,8 @@
 static const char *TAG = "autolock";
 
 #define TICK_MS            50
-#define FRAME_FRESH_MS     600
+#define FRAME_FRESH_MS     1000
+#define LOCK_RETRY_MS      1000
 #define LONG_PRESS_MS      3000
 #define RESET_PRESS_MS     10000
 #define LOG_EVERY_MS       10000
@@ -46,7 +48,9 @@ static bool s_seen;
 static int s_zone_targets;
 static int s_zone_points;
 static volatile bool s_watch;
-static volatile request_t s_request;
+static _Atomic request_t s_request;
+static bool s_data_ok;
+static bool s_lock_pending; /* lock decided but not yet delivered to the PC */
 
 static int64_t now_ms(void)
 {
@@ -67,13 +71,14 @@ static esp_err_t send_lock(host_os_t os)
     }
 }
 
-static void do_lock(host_os_t os)
+static bool do_lock(host_os_t os)
 {
     esp_err_t err = send_lock(os);
     ESP_LOGI(TAG, "LOCK (%s) -> %s", settings_os_name(os), esp_err_to_name(err));
     if (err == ESP_OK) {
         status_led_flash(LED_WHITE, 2);
     }
+    return err == ESP_OK;
 }
 
 static void do_wake(void)
@@ -86,6 +91,17 @@ static void do_wake(void)
 }
 
 /* ---------- radar -> "is somebody at the desk" ---------- */
+
+/* Usable radar data: fresh decoded targets, or a fresh point cloud when used. */
+static bool evaluate_data_ok(const radar_snapshot_t *snap, const presence_cfg_t *cfg, int64_t t)
+{
+    if (!snap->link_ok) {
+        return false;
+    }
+    const bool targets = snap->target_ms && t - snap->target_ms < FRAME_FRESH_MS;
+    const bool cloud = cfg->cloud_min_points > 0 && snap->cloud_ms && t - snap->cloud_ms < FRAME_FRESH_MS;
+    return targets || cloud;
+}
 
 static bool evaluate_seen(const radar_snapshot_t *snap, const presence_cfg_t *cfg, int64_t t)
 {
@@ -117,8 +133,10 @@ static void update_led(void)
 {
     if (hid_keys_state() == HID_LINK_DOWN) {
         status_led_set(LED_PURPLE, LED_BLINK);
-    } else if (!s_snap.link_ok) {
+    } else if (!s_data_ok) {
         status_led_set(LED_RED, LED_BLINK);
+    } else if (s_lock_pending) {
+        status_led_set(LED_BLUE, LED_BLINK);
     } else if (!s_settings.presence.lock_enabled) {
         status_led_set(LED_AMBER, LED_SOLID);
     } else if (s_presence.state == PRESENCE_STATE_AWAY) {
@@ -214,12 +232,12 @@ void app_set_watch(bool on)
 
 void app_request_lock(void)
 {
-    s_request = REQ_LOCK;
+    atomic_store(&s_request, REQ_LOCK);
 }
 
 void app_request_wake(void)
 {
-    s_request = REQ_WAKE;
+    atomic_store(&s_request, REQ_WAKE);
 }
 
 static const char *mode_name(radar_wire_mode_t m)
@@ -227,7 +245,7 @@ static const char *mode_name(radar_wire_mode_t m)
     switch (m) {
     case RADAR_WIRE_2D: return "2D";
     case RADAR_WIRE_3D: return "3D";
-    case RADAR_WIRE_HLK: return "HLK";
+    case RADAR_WIRE_20B: return "3D-20B";
     default: return "?";
     }
 }
@@ -243,24 +261,29 @@ static const char *link_name(hid_link_state_t s)
 
 void app_print_status(void)
 {
+    static radar_snapshot_t snap; /* console task only; large */
     xSemaphoreTake(s_mutex, portMAX_DELAY);
+    snap = s_snap;
+    const settings_t cfg = s_settings;
+    const presence_t pres = s_presence;
+    const int zt = s_zone_targets, zp = s_zone_points;
+    const bool data_ok = s_data_ok, pending = s_lock_pending;
+    xSemaphoreGive(s_mutex);
+
     const int64_t t = now_ms();
     printf("keyboard  %s, %s\n", hid_keys_transport(), link_name(hid_keys_state()));
     printf("radar     %s, %d baud, %s, frames %" PRIu32 ", bytes %" PRIu32 "\n",
-           s_snap.link_ok ? "OK" : "NO DATA", s_snap.baud, mode_name(s_snap.mode), s_snap.frames,
-           s_snap.rx_bytes);
-    printf("zone      targets %d (of %d), cloud points %d\n", s_zone_targets, s_snap.target_count,
-           s_zone_points);
-    for (int i = 0; i < s_snap.blip_count; ++i) {
-        const radar_wire_blip_t *b = &s_snap.blips[i];
+           data_ok ? "OK" : "NO DATA", snap.baud, mode_name(snap.mode), snap.frames, snap.rx_bytes);
+    printf("zone      targets %d (of %d), cloud points %d\n", zt, snap.target_count, zp);
+    for (int i = 0; i < snap.blip_count; ++i) {
+        const radar_wire_blip_t *b = &snap.blips[i];
         printf("  target  %.2f m at %+.0f deg (x %.2f y %.2f z %.2f)\n", b->distance_m,
                b->azimuth_deg, b->x_m, b->y_m, b->z_m);
     }
-    printf("state     %s, %s, idle %.1f s of %.1f s\n",
-           s_presence.state == PRESENCE_STATE_AWAY ? "AWAY" : "PRESENT",
-           s_settings.presence.lock_enabled ? "auto-lock on" : "PAUSED",
-           presence_idle_ms(&s_presence, t) / 1000.0, s_settings.presence.away_ms / 1000.0);
-    xSemaphoreGive(s_mutex);
+    printf("state     %s%s, %s, idle %.1f s of %.1f s\n",
+           pres.state == PRESENCE_STATE_AWAY ? "AWAY" : "PRESENT", pending ? " (lock pending)" : "",
+           cfg.presence.lock_enabled ? "auto-lock on" : "PAUSED",
+           presence_idle_ms(&pres, t) / 1000.0, cfg.presence.away_ms / 1000.0);
 }
 
 /* ---------- main loop ---------- */
@@ -289,6 +312,7 @@ void app_main(void)
 
     presence_init(&s_presence, now_ms());
     int64_t last_log = 0;
+    int64_t last_lock_try = 0;
     bool was_link_ok = false;
 
     for (;;) {
@@ -297,24 +321,36 @@ void app_main(void)
         xSemaphoreTake(s_mutex, portMAX_DELAY);
         radar_link_snapshot(&s_snap);
         const settings_t cfg = s_settings;
-        s_seen = evaluate_seen(&s_snap, &cfg.presence, t);
+        s_data_ok = evaluate_data_ok(&s_snap, &cfg.presence, t);
+        s_seen = s_data_ok && evaluate_seen(&s_snap, &cfg.presence, t);
         const presence_event_t ev =
-            presence_update(&s_presence, &cfg.presence, t, s_snap.link_ok, s_seen);
+            presence_update(&s_presence, &cfg.presence, t, s_data_ok, s_seen);
+        const bool away = s_presence.state == PRESENCE_STATE_AWAY;
         xSemaphoreGive(s_mutex);
 
-        if (s_snap.link_ok != was_link_ok) {
-            was_link_ok = s_snap.link_ok;
-            ESP_LOGI(TAG, "radar %s (%d baud)", was_link_ok ? "connected" : "lost", s_snap.baud);
+        if (s_data_ok != was_link_ok) {
+            was_link_ok = s_data_ok;
+            ESP_LOGI(TAG, "radar %s (%d baud)", was_link_ok ? "data OK" : "no usable data", s_snap.baud);
         }
 
         if (ev == PRESENCE_EVENT_LOCK) {
-            do_lock(cfg.os);
+            s_lock_pending = !do_lock(cfg.os);
+            last_lock_try = t;
         } else if (ev == PRESENCE_EVENT_WAKE) {
             do_wake();
         }
+        /* A lock that did not reach the PC (keyboard link busy or down) is
+         * retried while you are still away; it is dropped once you are back. */
+        if (s_lock_pending) {
+            if (!away || !cfg.presence.lock_enabled) {
+                s_lock_pending = false;
+            } else if (t - last_lock_try >= LOCK_RETRY_MS && hid_keys_state() == HID_LINK_READY) {
+                last_lock_try = t;
+                s_lock_pending = !do_lock(cfg.os);
+            }
+        }
 
-        const request_t req = s_request;
-        s_request = REQ_NONE;
+        const request_t req = atomic_exchange(&s_request, REQ_NONE);
         if (req == REQ_LOCK) {
             do_lock(cfg.os);
         } else if (req == REQ_WAKE) {
@@ -333,7 +369,7 @@ void app_main(void)
             last_log = t;
             ESP_LOGI(TAG, "%s, radar %s, keyboard %s",
                      s_presence.state == PRESENCE_STATE_AWAY ? "away" : "present",
-                     s_snap.link_ok ? "ok" : "no data", link_name(hid_keys_state()));
+                     s_data_ok ? "ok" : "no data", link_name(hid_keys_state()));
         }
 
         vTaskDelay(pdMS_TO_TICKS(TICK_MS));

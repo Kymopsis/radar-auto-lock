@@ -19,9 +19,9 @@
 
 typedef enum {
     RADAR_WIRE_UNKNOWN = 0,
-    RADAR_WIRE_2D,      /* Andar 2D: x,y,dop,id — 16 B/item */
-    RADAR_WIRE_3D,      /* Andar 3D: x,y,z,id,power,speed — 24 B/item */
-    RADAR_WIRE_HLK,     /* HLK stock: x,y,z,dop_idx,cluster_id — 20 B/item */
+    RADAR_WIRE_2D,      /* x,y,doppler,id: 16 B/item */
+    RADAR_WIRE_3D,      /* x,y,z,id,power,speed: 24 B/item */
+    RADAR_WIRE_20B,     /* x,y,z,doppler,id: 20 B/item */
 } radar_wire_mode_t;
 
 typedef struct {
@@ -34,7 +34,7 @@ typedef struct {
 } radar_wire_blip_t;
 
 /*
- * Module frame (as marked on the module / vendor 3D host tools):
+ * Module frame (as marked on the module):
  *   +X = left along board long axis
  *   +Y = forward (out of antenna face)
  *   +Z = up
@@ -52,7 +52,7 @@ typedef struct {
     float elevation_deg;
     float distance_m;
     float radial_speed_mps;     /* valid only when speed_mps_valid */
-    int32_t doppler_raw;        /* 2D / HLK Doppler field */
+    int32_t doppler_raw;        /* raw Doppler field of the 16 B and 20 B layouts */
     int32_t track_id;           /* cluster/id; -1 if unknown */
     int target_count;
     int blip_count;
@@ -91,15 +91,12 @@ typedef enum {
 typedef struct {
     radar_tf_state_t state;
     uint8_t header[7];
-    uint8_t field[2];
     uint8_t payload[RADAR_TF_PAYLOAD_MAX];
     uint16_t payload_len;
     uint16_t payload_used;
     uint16_t type;
     uint8_t field_used;
     radar_wire_mode_t latched_mode;
-    int32_t latched_track_id; /* sticky primary across frames; -1 = none */
-    uint8_t track_misses;
 } radar_tf_decoder_t;
 
 void radar_tf_decoder_init(radar_tf_decoder_t *decoder);

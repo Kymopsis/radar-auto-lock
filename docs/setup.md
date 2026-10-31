@@ -46,14 +46,17 @@ standard keyboard. The LED tells you what is going on:
 | Red, blinking | No data from the radar: check TX/RX and the 3.3 V supply |
 | Green | You are at the desk |
 | Blue | You are away (PC locked) |
+| Blue, blinking | You are away but the lock shortcut has not reached the PC yet; retried every second |
 | Amber | Paused |
 | White flash | Lock (2×) or wake (1×) sent |
 
 ### Your OS
 
-Hold **BOOT** for 3 s and release. The LED flashes cyan:
+Hold **BOOT**. After 3 s the LED gives one short cyan flash: release now.
+The LED then flashes cyan to show the new choice:
 1× Windows (Win + L), 2× macOS (Ctrl + Cmd + Q), 3× Linux (Super + L).
-Hold again to go to the next one. The choice is saved.
+Hold again to go to the next one. The choice is saved. A short press (under
+3 s) pauses or resumes auto-lock instead.
 
 - **macOS** may open the Keyboard Setup Assistant the first time. Close it.
 - **Linux:** Super + L locks GNOME, KDE Plasma and Cinnamon. On other desktops
@@ -75,6 +78,7 @@ Monitor). Type `help`.
 | Command | Default | What it does |
 |---|---|---|
 | `status` | | Radar link, targets in the zone, keyboard state |
+| `settings` | | Show all settings |
 | `watch on` / `watch off` | off | Prints presence twice a second while you test |
 | `set away 30` | 30 s | Lock after nobody is seen this long (5–600) |
 | `set range 1.2` | 1.2 m | Only things closer than this count (0.3–3.0) |
@@ -111,5 +115,6 @@ only locked.
 
 ## Factory reset
 
-Hold **BOOT** for 10 s (three red flashes). Settings go back to the defaults
-and Bluetooth pairings are removed.
+Hold **BOOT** for 10 s: three red flashes tell you to release, three more
+confirm the reset. Settings go back to the defaults and Bluetooth pairings are
+removed.

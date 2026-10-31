@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: CC-BY-4.0
+# Copyright (c) 2026 Kymopsis
 """
 Radar Auto-Lock enclosure, parametric (CadQuery).
 
@@ -155,7 +157,7 @@ def make_lid():
     lid = lid.union(box(CX - 8, WALL + 0.6, -to_radar + 0.3, CX + 8, POCKET_Y - 0.6, lid_under + 0.01))
 
     # Window over the BOOT/RST buttons and the RGB LED (USB end of the board).
-    lid = lid.cut(box(BOARD_X1 - 40.0, BOARD_Y0 + 5.0, -3, BOARD_X1 - 7.5, BOARD_Y0 + BOARD_W - 5.0, LID_T + 1))
+    lid = lid.cut(box(BOARD_X1 - 46.0, BOARD_Y0 + 5.0, -3, BOARD_X1 - 7.5, BOARD_Y0 + BOARD_W - 5.0, LID_T + 1))
     # Vent slots over the wiring area.
     for i in range(4):
         x = X0 + 8 + i * 6.0
@@ -206,7 +208,7 @@ def make_desk_foot(tilt_deg=6.0):
     top = box(0, 0, -3.0, OUT_X, depth, 0)
     top = top.union(dovetail_profile(DT_NARROW, DT_WIDE, DT_H, OUT_X).translate((0, DT_Y, -0.01)))
     # Raise the front: rotate about the back edge.
-    top = top.rotate((0, depth, 0), (1, depth, 0), tilt_deg)
+    top = top.rotate((0, depth, 0), (1, depth, 0), -tilt_deg)
     rise = depth * math.sin(math.radians(tilt_deg))
     filler = (
         cq.Workplane("YZ")

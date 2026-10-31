@@ -95,6 +95,8 @@ enclosure/   Case, lid, monitor clips, desk foot (STL) + the CadQuery script
 
 ## Compliance notice
 
+**Development board for evaluation · not FCC/CE certified · not for consumer sale**
+
 The radar and ESP32 boards used here are **development boards for evaluation
 and prototyping**. The radar board is **not FCC certified and not CE marked**,
 and it is not sold as a consumer product. Operate it only where its use as an
@@ -111,7 +113,8 @@ yourself when security matters.
 
 ## License
 
-Code: [MIT](LICENSE). Documentation and enclosure files: [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+Firmware: [MIT](LICENSE). Documentation and enclosure files (STL and
+`enclosure.py`): [CC BY 4.0](enclosure/LICENSE).
 
 The radar module ships with its own pre-built firmware; this repository only
 contains the ESP32 side and reads the radar's published UART output.
