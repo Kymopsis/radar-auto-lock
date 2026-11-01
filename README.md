@@ -39,7 +39,7 @@ Safety rules built into the firmware:
 
 | Part | Notes | Buy |
 |---|---|---|
-| 60 GHz presence & tracking radar (MA161BT), **Development kit** edition | 2T2R, 120° × 120° field of view, target positions over UART | [Kymopsis](https://kymopsis.com/product/60ghz-presence-tracking-radar-development-kit/?attribute_edition=Development+kit&utm_source=github&utm_medium=readme&utm_campaign=radar-auto-lock) |
+| 60 GHz presence & tracking radar development kit (MA161BT) | 2T2R, 120° × 120° field of view, target positions over UART | [Kymopsis](https://kymopsis.com/product/60ghz-presence-tracking-radar-development-kit/?utm_source=github&utm_medium=readme&utm_campaign=radar-auto-lock) |
 | ESP32-S3 board, dual USB-C | Any ESP32-S3 DevKitC-1 style board; the case fits the N16R8 board below | [Kymopsis](https://kymopsis.com/product/esp32-s3-n16r8-development-board/?utm_source=github&utm_medium=readme&utm_campaign=radar-auto-lock) |
 | AMS1117-3.3 V module | Clean 3.3 V for the radar (it draws up to 600 mA peaks) | [Kymopsis](https://kymopsis.com/product/ams1117-3-3v-ldo-power-module/?utm_source=github&utm_medium=readme&utm_campaign=radar-auto-lock) |
 | Dupont jumper wires, F-F | 8 wires | [Kymopsis](https://kymopsis.com/product/dupont-jumper-wire-kit-120pcs/?utm_source=github&utm_medium=readme&utm_campaign=radar-auto-lock) |
@@ -47,14 +47,6 @@ Safety rules built into the firmware:
 | 3D-printed case | 3 parts: case, lid, one clip (or the desk foot) | [`enclosure/`](enclosure/) |
 
 No soldering if your radar kit and AMS1117 module come with pin headers.
-
-**Development kit or DIY board?** Both run this project. The DIY board comes with
-one pre-flashed firmware and UART output notes only. The Development kit adds the
-configuration GUI, all firmware builds, the flashing tool and guide, and email
-support, so you can switch firmware and tune the radar. Development kit buyers
-get the GUI and firmware download links after they order.
-
-<!-- TODO: link the Radar Auto-Lock project kit here once it is listed on kymopsis.com. -->
 
 ## Quick start
 
