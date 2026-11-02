@@ -19,10 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
----
-
-Scope: the MIT License above applies to the firmware (firmware/) and the
-CI configuration. The documentation (docs/, README files) and the hardware
-files in enclosure/ (STL files and enclosure.py) are licensed under the
-Creative Commons Attribution 4.0 International License, see enclosure/LICENSE.

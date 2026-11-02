@@ -113,7 +113,8 @@ yourself when security matters.
 
 ## License
 
-Firmware: [MIT](LICENSE). Documentation and enclosure files (STL and
+Firmware (`firmware/`) and the CI configuration: [MIT](LICENSE).
+Documentation (`docs/`, README files) and enclosure files (STL and
 `enclosure.py`): [CC BY 4.0](enclosure/LICENSE).
 
 The radar module ships with its own pre-built firmware; this repository only
