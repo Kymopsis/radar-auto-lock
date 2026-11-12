@@ -29,12 +29,17 @@ BOARD_TOP_PARTS = 3.6  # tallest part on top (USB-C shells, RF shield)
 ANTENNA_OVERHANG = 5.7  # antenna tab without pins at the far end
 WIRE_SPACE = 24.0     # under the board: header pins + Dupont housings
 
-# 60 GHz radar module, PCB antenna (2T2R, 25 x 31.5 mm)
+# 60 GHz radar module, PCB antenna (2T2R, 25 x 31.5 mm). It stands upright with
+# the antennas facing the front window and its pin-free antenna end on the left.
+# 2.0 mm headers on the other three edges point backwards; their solder tails
+# and the chips stick out ~1.2 mm at the front, hence the stand-off.
 RADAR_W = 31.5        # along X
-RADAR_H = 25.0        # along Z (board stands upright, antennas face front)
-RADAR_T = 5.2
+RADAR_H = 25.0        # along Z
+RADAR_PCB = 1.6
+RADAR_FRONT = 1.5     # air gap between window and PCB (front parts, pin tails)
+RADAR_FREE_END = 10.0  # antenna end without pins (first side pins at ~11 mm)
 RADOME = 1.5          # plastic in front of the antennas, ~half a wavelength in PLA/PETG
-RADAR_TO_BOARD = 15.0  # free space behind the radar for its header and wires
+RADAR_TO_BOARD = 17.0  # free space behind the radar for its headers and jumper housings
 
 # Monitor clip
 CLIP_GAPS = (6, 12, 20)   # monitor/laptop-lid thickness at the top edge
@@ -52,7 +57,9 @@ DT_FIT = 0.25
 # ---------------------------------------------------------------- derived
 
 IN_X = BOARD_L + 1.0
-POCKET_Y = RADOME + RADAR_T + CLR             # radar slot ends here
+RADAR_Y0 = RADOME + RADAR_FRONT               # PCB front face
+RADAR_Y1 = RADAR_Y0 + RADAR_PCB               # PCB back face
+POCKET_Y = RADAR_Y1 + CLR                     # radar slot ends here
 BOARD_Y0 = POCKET_Y + RADAR_TO_BOARD          # board front edge
 IN_Y_END = BOARD_Y0 + BOARD_W + CLR           # inner back face
 
@@ -96,12 +103,14 @@ def make_case():
     rw, rh = RADAR_W + 1.0, RADAR_H + 1.0
     case = case.cut(box(CX - rw / 2, RADOME, RADAR_Z0 - 0.5, CX + rw / 2, WALL + 0.01, RADAR_Z0 + rh - 0.5))
 
-    # Radar ledge and two retaining ribs behind the radar edges.
+    # Radar ledge.
     case = case.union(box(CX - RADAR_W / 2 - 1, WALL - 0.01, FLOOR - 0.01, CX + RADAR_W / 2 + 1, POCKET_Y, RADAR_Z0))
-    for sx in (-1, 1):
-        xa = CX + sx * (RADAR_W / 2 - 3.0)
-        xb = CX + sx * (RADAR_W / 2 + 1.0)
-        case = case.union(box(min(xa, xb), POCKET_Y, FLOOR - 0.01, max(xa, xb), POCKET_Y + 2.5, RADAR_Z1))
+    # Channel for the pin-free antenna end (left): a front lip outside the
+    # antenna patches sets the air gap, a rear rib stops it tipping back.
+    # The pinned end only rests on the ledge, so headers and housings stay clear.
+    xl = CX - RADAR_W / 2
+    case = case.union(box(xl - 1.6, RADOME - 0.01, FLOOR - 0.01, xl + 1.4, RADAR_Y0 - CLR / 2, RADAR_Z1))
+    case = case.union(box(xl - 1.6, POCKET_Y, FLOOR - 0.01, xl + RADAR_FREE_END - 2.0, POCKET_Y + 2.5, RADAR_Z1))
     # Side guides so the radar cannot slide left/right.
     for sx in (-1, 1):
         xa = CX + sx * (RADAR_W / 2 + CLR / 2)
@@ -153,8 +162,9 @@ def make_lid():
     lid = lid.union(box(BOARD_X0 + 0.8, ycen - 6, -to_pcb + 0.2, BOARD_X0 + ANTENNA_OVERHANG - 1.0, ycen + 6, lid_under + 0.01))
     lid = lid.union(box(BOARD_X1 - 6.5, ycen - 11, -to_usb + 0.2, BOARD_X1 - 1.0, ycen - 7.5, lid_under + 0.01))
     lid = lid.union(box(BOARD_X1 - 6.5, ycen + 7.5, -to_usb + 0.2, BOARD_X1 - 1.0, ycen + 11, lid_under + 0.01))
+    # Presses on the radar's top edge, in front of its header (no wider than the PCB).
     to_radar = CASE_H - RADAR_Z1
-    lid = lid.union(box(CX - 8, WALL + 0.6, -to_radar + 0.3, CX + 8, POCKET_Y - 0.6, lid_under + 0.01))
+    lid = lid.union(box(CX - 8, WALL + 0.6, -to_radar + 0.3, CX + 8, RADAR_Y1 - 0.2, lid_under + 0.01))
 
     # Window over the BOOT/RST buttons and the RGB LED (USB end of the board).
     lid = lid.cut(box(BOARD_X1 - 46.0, BOARD_Y0 + 5.0, -3, BOARD_X1 - 7.5, BOARD_Y0 + BOARD_W - 5.0, LID_T + 1))

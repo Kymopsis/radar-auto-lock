@@ -47,8 +47,8 @@ and wire it like this:
 | GPIO18 (RX) | TX0 (pin 4) |
 | GPIO4 (optional) | RST (pin 5) |
 
-The case is sized for the PCB-antenna board, so mount the AiP sensor yourself,
-antenna side facing your seat.
+The printed case is made for the PCB-antenna board, so mount the AiP sensor
+yourself, antenna side facing your seat, with nothing metal in front of it.
 
 ## Rules that matter
 
@@ -72,8 +72,10 @@ when you want to flash or change settings; two cables to the same PC are fine.
 
 ## Into the case
 
-1. Slide the radar into the slot behind the front window, antennas facing out
-   (towards you), cable side up. It rests on the small ledge.
+1. Plug the jumper wires onto the radar's header pins first. Then slide the
+   radar down into the slot behind the front window, antennas facing out
+   (towards you) and the end without pins on the left, in the narrow channel.
+   It rests on the small ledge; the pinned end and its wires stay free.
 2. Plug the wires onto the ESP32 header pins, then lay the board in from the
    top, components up, USB-C ports into the opening on the right. The antenna
    end rests on the block on the left.
