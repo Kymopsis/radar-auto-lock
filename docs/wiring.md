@@ -1,9 +1,12 @@
 # Wiring
 
-Eight jumper wires, no soldering. The radar board (PCB-antenna module) has
-2.0 mm pitch headers: use 2.0 → 2.54 mm jumper wires for its pins (the DIY
-board comes with them) and plain Dupont wires for the rest. With the
-development kit, lift the radar board off its interface board for this build.
+Eight jumper wires, no soldering. This page covers both radars: the
+PCB-antenna radar board (below) and the [AiP sensor](#aip-sensor).
+
+The PCB-antenna board has 2.0 mm pitch headers: use the 2.0 → 2.54 mm jumper
+wires that come with the DIY board for its pins, and plain Dupont wires for
+the rest. On the development kit, lift the radar board off its interface board
+for this build.
 
 ```
 PC USB port ──USB-C cable──▶ ESP32-S3 board, port "USB"   (power + keyboard)

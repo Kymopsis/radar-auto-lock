@@ -39,21 +39,22 @@ Safety rules built into the firmware:
 
 | Part | Notes | Buy |
 |---|---|---|
-| 60 GHz radar module, PCB antenna (2T2R, 25 × 31.5 mm) | Choose the **Presence, wall mount** application. Development kit: on a USB-C interface board, with a flash programmer to try every application build. DIY board: one build, comes with 2.0 → 2.54 mm jumper wires and an AMS1117 module | [Kymopsis](https://kymopsis.com/product/60ghz-ceiling-presence-radar-development-kit/?utm_source=github&utm_medium=readme&utm_campaign=radar-auto-lock) |
+| 60 GHz radar, one of the two below | Order it with the **Presence, wall mount** application | |
+| ↳ AiP radar sensor (42 × 8 mm) | Antennas in the chip package; pre-flashed. The "Sensor only" option comes with its 6-pin lead and an AMS1117 module | [Kymopsis](https://kymopsis.com/product/60ghz-aip-gesture-radar-development-kit/?utm_source=github&utm_medium=readme&utm_campaign=radar-auto-lock) |
+| ↳ PCB-antenna radar board, DIY (25 × 31.5 mm) | Pre-flashed, comes with 2.0 → 2.54 mm jumper wires and an AMS1117 module; fits the printed case | [Kymopsis](https://kymopsis.com/product/60ghz-ceiling-presence-radar-development-kit/?utm_source=github&utm_medium=readme&utm_campaign=radar-auto-lock) |
 | ESP32-S3 board, dual USB-C | Any ESP32-S3 DevKitC-1 style board; the case fits the N16R8 board below | [Kymopsis](https://kymopsis.com/product/esp32-s3-n16r8-development-board/?utm_source=github&utm_medium=readme&utm_campaign=radar-auto-lock) |
-| AMS1117-3.3 V module | Clean 3.3 V for the radar (it draws up to 600 mA peaks). Already included with the DIY board | [Kymopsis](https://kymopsis.com/product/ams1117-3-3v-ldo-power-module/?utm_source=github&utm_medium=readme&utm_campaign=radar-auto-lock) |
+| AMS1117-3.3 V module | Clean 3.3 V for the radar (it draws up to 600 mA peaks). Included with both radars above | [Kymopsis](https://kymopsis.com/product/ams1117-3-3v-ldo-power-module/?utm_source=github&utm_medium=readme&utm_campaign=radar-auto-lock) |
 | Dupont jumper wires, F-F | 8 wires | [Kymopsis](https://kymopsis.com/product/dupont-jumper-wire-kit-120pcs/?utm_source=github&utm_medium=readme&utm_campaign=radar-auto-lock) |
 | USB-C cable | Board's **USB** port to the PC | Any |
 | 3D-printed case | 3 parts: case, lid, one clip (or the desk foot) | [`enclosure/`](enclosure/) |
 
-No soldering: the radar board has 2.0 mm headers, so use 2.0 → 2.54 mm jumper
-wires for it and plain Dupont wires for the rest.
+No soldering. Both radars output the same target frames, so the firmware is
+the same. The printed case holds the PCB-antenna board; the AiP sensor is a
+thin strip you mount yourself. Wiring for both: [docs/wiring.md](docs/wiring.md).
 
-**Also works:** the [60 GHz AiP radar sensor](https://kymopsis.com/product/60ghz-aip-gesture-radar-development-kit/?utm_source=github&utm_medium=readme&utm_campaign=radar-auto-lock),
-pre-flashed with the **Presence, wall mount** application. It is a smaller
-strip (42 × 8 mm) with a fixed firmware build and a 6-pin lead, and it outputs
-the same target frames. The printed case is sized for the PCB-antenna board;
-wiring for the AiP sensor is in [docs/wiring.md](docs/wiring.md#aip-sensor).
+Want to try other radar applications on the same board later? The PCB-antenna
+board also comes as a development kit with a flash programmer that switches
+between application builds.
 
 ## Quick start
 
