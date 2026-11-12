@@ -40,5 +40,6 @@ is 1.5 mm, about half a wavelength in the plastic. Do not use metal-filled or
 carbon-filled filament.
 
 **Which radar firmware?**
-The one pre-flashed on the Kymopsis presence & tracking kit. Any firmware that
-outputs the TinyFrame target list (`0x0A04`) works.
+The **Presence, wall mount** application build, on either the PCB-antenna
+radar board or the pre-flashed AiP sensor. Any build that outputs the
+TinyFrame target list (`0x0A04`) works; the gesture build does not.

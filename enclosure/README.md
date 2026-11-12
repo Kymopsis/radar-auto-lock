@@ -14,7 +14,7 @@ Print the case, the lid and **one** clip that matches your screen (or the desk f
 
 | Part | File | What it does |
 |---|---|---|
-| Case | [case.stl](case.stl) | Radar slot behind a 1.5 mm window, board supports, USB-C opening, dovetail groove underneath |
+| Case | [case.stl](case.stl) | Radar slot (fits the 25 × 31.5 mm PCB-antenna radar board) behind a 1.5 mm window, board supports, USB-C opening, dovetail groove underneath |
 | Lid | [lid.stl](lid.stl) | Holds the board and radar down; window over the BOOT button and LED |
 | Clip, 6 mm | [clip-6mm.stl](clip-6mm.stl) | Laptop lids and very thin monitors |
 | Clip, 12 mm | [clip-12mm.stl](clip-12mm.stl) | Most thin-bezel monitors |

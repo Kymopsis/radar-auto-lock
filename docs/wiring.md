@@ -1,7 +1,9 @@
 # Wiring
 
-Eight Dupont wires, no soldering (if your radar kit and AMS1117 module come
-with pin headers).
+Eight jumper wires, no soldering. The radar board (PCB-antenna module) has
+2.0 mm pitch headers: use 2.0 → 2.54 mm jumper wires for its pins (the DIY
+board comes with them) and plain Dupont wires for the rest. With the
+development kit, lift the radar board off its interface board for this build.
 
 ```
 PC USB port ──USB-C cable──▶ ESP32-S3 board, port "USB"   (power + keyboard)
@@ -25,8 +27,25 @@ ESP32-S3 board                      AMS1117-3.3 module          60 GHz radar
 | — | AMS1117 3.3V OUT → radar 3.3V | The radar's own supply |
 
 Pin numbers are the radar module's pad numbers from the
-[datasheet](https://kymopsis.com/product/60ghz-presence-tracking-radar-development-kit/?utm_source=github&utm_medium=docs&utm_campaign=radar-auto-lock).
-If your kit comes with a labelled lead, follow the labels (3V3, GND, TX, RX).
+[datasheet](https://kymopsis.com/product/60ghz-ceiling-presence-radar-development-kit/?utm_source=github&utm_medium=docs&utm_campaign=radar-auto-lock).
+The radar must run the **Presence, wall mount** application build.
+
+## AiP sensor
+
+The pre-flashed [AiP radar sensor](https://kymopsis.com/product/60ghz-aip-gesture-radar-development-kit/?utm_source=github&utm_medium=docs&utm_campaign=radar-auto-lock)
+(Presence, wall mount build) uses the same ESP32 pins. Plug in its 6-pin lead
+and wire it like this:
+
+| ESP32-S3 / AMS1117 | AiP sensor lead |
+|---|---|
+| AMS1117 3.3V OUT | 3.3V (pin 1) |
+| GND | GND (pin 6) |
+| GPIO17 (TX) | RX0 (pin 3) |
+| GPIO18 (RX) | TX0 (pin 4) |
+| GPIO4 (optional) | RST (pin 5) |
+
+The case is sized for the PCB-antenna board, so mount the AiP sensor yourself,
+antenna side facing your seat.
 
 ## Rules that matter
 

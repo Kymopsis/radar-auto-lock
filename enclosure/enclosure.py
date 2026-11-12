@@ -29,7 +29,7 @@ BOARD_TOP_PARTS = 3.6  # tallest part on top (USB-C shells, RF shield)
 ANTENNA_OVERHANG = 5.7  # antenna tab without pins at the far end
 WIRE_SPACE = 24.0     # under the board: header pins + Dupont housings
 
-# 60 GHz presence & tracking radar module
+# 60 GHz radar module, PCB antenna (2T2R, 25 x 31.5 mm)
 RADAR_W = 31.5        # along X
 RADAR_H = 25.0        # along Z (board stands upright, antennas face front)
 RADAR_T = 5.2
