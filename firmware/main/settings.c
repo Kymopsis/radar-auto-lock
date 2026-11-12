@@ -33,6 +33,7 @@ esp_err_t settings_load(settings_t *s)
     p->range_m = (float)get_i32(h, "range_cm", (int32_t)(p->range_m * 100.0f)) / 100.0f;
     p->half_fov_deg = (float)get_i32(h, "fov_deg", (int32_t)p->half_fov_deg);
     p->cloud_min_points = get_i32(h, "cloud_min", p->cloud_min_points);
+    p->use_radar_zones = get_i32(h, "zones", p->use_radar_zones) != 0;
     p->away_ms = (uint32_t)get_i32(h, "away_ms", (int32_t)p->away_ms);
     p->return_ms = (uint32_t)get_i32(h, "return_ms", (int32_t)p->return_ms);
     p->lock_enabled = get_i32(h, "lock", p->lock_enabled) != 0;
@@ -53,6 +54,7 @@ esp_err_t settings_save(const settings_t *s)
     nvs_set_i32(h, "range_cm", (int32_t)(p->range_m * 100.0f + 0.5f));
     nvs_set_i32(h, "fov_deg", (int32_t)(p->half_fov_deg + 0.5f));
     nvs_set_i32(h, "cloud_min", p->cloud_min_points);
+    nvs_set_i32(h, "zones", p->use_radar_zones);
     nvs_set_i32(h, "away_ms", (int32_t)p->away_ms);
     nvs_set_i32(h, "return_ms", (int32_t)p->return_ms);
     nvs_set_i32(h, "lock", p->lock_enabled);

@@ -8,12 +8,18 @@ The radar streams TinyFrame packets over UART:
 SOF 0x01 | ID u16 BE | LEN u16 BE | TYPE u16 BE | header checksum | payload | payload checksum
 ```
 
-- Type `0x0A04`: target list. Each item has x (left), y (forward, out of the
-  antenna face) and, on 3D firmware, z (up), in metres, plus an id.
-- Type `0x0A08`: point cloud with the same item layout.
+- Type `0x0A04`: target list. A u32 count, then one item per target with x
+  (left), y (forward, out of the antenna face) and z (up) in metres as
+  little-endian floats, then a Doppler index and a track id (20 bytes per
+  item on current radar firmware).
+- Type `0x0A08`: point cloud with the same item layout. Most radar firmware
+  builds ship with it switched off, so the board normally runs on targets
+  alone.
+- Type `0x0A0A`: the radar's own presence flag for each of its 4 zones
+  (4 × u32). Shown by `status`; used only after `set zones on`.
 
 Payload layout (16, 20 or 24 bytes per item) is
-detected from the frame length. The UART starts at 115200 baud and steps
+detected from the frame length, so older firmware builds also work. The UART starts at 115200 baud and steps
 through 1382400, 921600, 460800 and 256000 if no valid frame arrives within
 3 s. Code: `firmware/components/radar_link/`, host test in
 `radar_link/test/`.
@@ -25,7 +31,13 @@ A target or point counts when it is in front of the radar (y > 0), closer than
 past at 2 m, or the wall behind you, does not count.
 
 "Seen" in a frame = at least one target in the zone, **or** at least `cloud`
-(3) point-cloud points in the zone. Frames older than 1 s are ignored.
+(3) point-cloud points in the zone, **or** (with `set zones on`) any radar
+zone flag set. Frames older than 1 s are ignored.
+
+Someone sitting still is not lost: the radar keeps an existing track alive
+through small movements (breathing, posture) and only drops it after a hold
+time, so the target list keeps reporting you while you read. The `away` delay
+covers the remaining gaps.
 
 ## State machine
 
@@ -38,7 +50,8 @@ past at 2 m, or the wall behind you, does not count.
 - Wake is sent only when this absence was locked by the board (not while paused).
 - No usable radar data = timers frozen. A cable that falls off, or frames the
   firmware cannot decode, never lock your PC. "Usable" means a decoded target
-  frame (or point-cloud frame, when `cloud` is on) in the last second.
+  frame (or point-cloud frame when `cloud` is on, or zone frame when `zones` is
+  on) in the last second.
 - If the lock shortcut cannot be delivered (keyboard link busy), it is retried
   every second while you are still away.
 - After boot it locks only after it has seen someone.

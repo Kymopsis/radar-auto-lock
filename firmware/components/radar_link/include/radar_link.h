@@ -2,7 +2,8 @@
 
 /*
  * radar_link: reads the 60 GHz radar's UART, decodes TinyFrame packets and
- * keeps the latest target list (type 0x0A04) and point cloud (type 0x0A08).
+ * keeps the latest target list (type 0x0A04), point cloud (type 0x0A08) and
+ * the radar's own zone-presence flags (type 0x0A0A).
  *
  * Module frame: +X = left, +Y = forward (out of the antenna face), +Z = up.
  */
@@ -18,7 +19,7 @@ extern "C" {
 #endif
 
 typedef struct {
-    bool link_ok;                /* a decodable target/cloud frame arrived in the last 1.5 s */
+    bool link_ok;                /* a decodable target/cloud/zone frame arrived in the last 1.5 s */
     int baud;                    /* UART rate in use */
     radar_wire_mode_t mode;      /* 16, 20 or 24 bytes per item */
     uint32_t frames;             /* valid frames since boot */
@@ -30,6 +31,8 @@ typedef struct {
     int64_t cloud_ms;            /* time of the latest cloud frame, 0 = never */
     int cloud_count;
     radar_wire_point_t cloud[RADAR_MAX_CLOUD];
+    int64_t zones_ms;            /* time of the latest zone-presence frame, 0 = never */
+    uint32_t zone_flags[RADAR_ZONE_COUNT];
 } radar_snapshot_t;
 
 esp_err_t radar_link_init(int uart_num, int tx_gpio, int rx_gpio, int rst_gpio);

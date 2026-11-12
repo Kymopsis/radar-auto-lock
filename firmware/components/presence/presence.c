@@ -15,6 +15,7 @@ void presence_default_cfg(presence_cfg_t *cfg)
     cfg->range_m = 1.2f;
     cfg->half_fov_deg = 60.0f;
     cfg->cloud_min_points = 3;
+    cfg->use_radar_zones = false;
     cfg->away_ms = 30000;
     cfg->return_ms = 1000;
     cfg->lock_enabled = true;

@@ -29,6 +29,7 @@ static void print_help(void)
            "  set fov <degrees>      watched half-angle left/right (10-60)\n"
            "  set return <ms>        seen this long counts as back (200-5000)\n"
            "  set cloud <points>     point-cloud points that count as seen, 0 = off\n"
+           "  set zones on|off       also trust the radar's own zone-presence flags\n"
            "  set lock on|off        auto-lock (BOOT button toggles it too)\n"
            "  set wake on|off        wake the screen when you come back\n"
            "  lock / wake            send it now (test the keyboard)\n"
@@ -41,9 +42,9 @@ static void print_settings(void)
     settings_t s;
     app_get_settings(&s);
     const presence_cfg_t *p = &s.presence;
-    printf("os %s | away %.0f s | range %.2f m | fov %.0f deg | return %u ms | cloud %d | lock %s | wake %s\n",
+    printf("os %s | away %.0f s | range %.2f m | fov %.0f deg | return %u ms | cloud %d | zones %s | lock %s | wake %s\n",
            settings_os_name(s.os), p->away_ms / 1000.0, p->range_m, p->half_fov_deg,
-           (unsigned)p->return_ms, p->cloud_min_points, p->lock_enabled ? "on" : "off",
+           (unsigned)p->return_ms, p->cloud_min_points, p->use_radar_zones ? "on" : "off", p->lock_enabled ? "on" : "off",
            p->wake_enabled ? "on" : "off");
 }
 
@@ -100,6 +101,8 @@ static void cmd_set(const char *key, const char *val)
         p->return_ms = (uint32_t)f;
     } else if (!strcmp(key, "cloud") && (ok = parse_num(val, 0, 64, &f))) {
         p->cloud_min_points = (int)f;
+    } else if (!strcmp(key, "zones") && (ok = parse_onoff(val, &b))) {
+        p->use_radar_zones = b;
     } else if (!strcmp(key, "lock") && (ok = parse_onoff(val, &b))) {
         p->lock_enabled = b;
     } else if (!strcmp(key, "wake") && (ok = parse_onoff(val, &b))) {

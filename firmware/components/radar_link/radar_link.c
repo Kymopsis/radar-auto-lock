@@ -27,7 +27,7 @@ static radar_tf_decoder_t s_decoder;
 static radar_wire_event_t s_event; /* large; keep off the task stack */
 static int s_uart;
 static int64_t s_last_frame_ms; /* any valid frame (drives baud hunting) */
-static int64_t s_last_data_ms;  /* last parsed target or cloud frame */
+static int64_t s_last_data_ms;  /* last parsed target, cloud or zone frame */
 
 static int64_t now_ms(void)
 {
@@ -53,6 +53,10 @@ static void handle_event(const radar_wire_event_t *ev, int64_t t)
         s_last_data_ms = t;
         s_snap.cloud_count = ev->cloud_count;
         memcpy(s_snap.cloud, ev->cloud, sizeof(radar_wire_point_t) * (size_t)ev->cloud_count);
+    } else if (ev->type == RADAR_TF_TYPE_ZONES && ev->has_zones) {
+        s_snap.zones_ms = t;
+        s_last_data_ms = t;
+        memcpy(s_snap.zone_flags, ev->zone_flags, sizeof(s_snap.zone_flags));
     }
     xSemaphoreGive(s_lock);
 }

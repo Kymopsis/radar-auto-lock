@@ -100,7 +100,8 @@ static bool evaluate_data_ok(const radar_snapshot_t *snap, const presence_cfg_t 
     }
     const bool targets = snap->target_ms && t - snap->target_ms < FRAME_FRESH_MS;
     const bool cloud = cfg->cloud_min_points > 0 && snap->cloud_ms && t - snap->cloud_ms < FRAME_FRESH_MS;
-    return targets || cloud;
+    const bool zones = cfg->use_radar_zones && snap->zones_ms && t - snap->zones_ms < FRAME_FRESH_MS;
+    return targets || cloud || zones;
 }
 
 static bool evaluate_seen(const radar_snapshot_t *snap, const presence_cfg_t *cfg, int64_t t)
@@ -123,7 +124,13 @@ static bool evaluate_seen(const radar_snapshot_t *snap, const presence_cfg_t *cf
             }
         }
     }
-    return s_zone_targets > 0 ||
+    bool radar_zone = false;
+    if (cfg->use_radar_zones && snap->zones_ms && t - snap->zones_ms < FRAME_FRESH_MS) {
+        for (int i = 0; i < RADAR_ZONE_COUNT; ++i) {
+            radar_zone = radar_zone || snap->zone_flags[i] != 0;
+        }
+    }
+    return s_zone_targets > 0 || radar_zone ||
            (cfg->cloud_min_points > 0 && s_zone_points >= cfg->cloud_min_points);
 }
 
@@ -275,6 +282,11 @@ void app_print_status(void)
     printf("radar     %s, %d baud, %s, frames %" PRIu32 ", bytes %" PRIu32 "\n",
            data_ok ? "OK" : "NO DATA", snap.baud, mode_name(snap.mode), snap.frames, snap.rx_bytes);
     printf("zone      targets %d (of %d), cloud points %d\n", zt, snap.target_count, zp);
+    if (snap.zones_ms) {
+        printf("radar     zone flags %u %u %u %u (%.1f s ago)%s\n", (unsigned)snap.zone_flags[0],
+               (unsigned)snap.zone_flags[1], (unsigned)snap.zone_flags[2], (unsigned)snap.zone_flags[3],
+               (t - snap.zones_ms) / 1000.0, cfg.presence.use_radar_zones ? "" : ", not used");
+    }
     for (int i = 0; i < snap.blip_count; ++i) {
         const radar_wire_blip_t *b = &snap.blips[i];
         printf("  target  %.2f m at %+.0f deg (x %.2f y %.2f z %.2f)\n", b->distance_m,

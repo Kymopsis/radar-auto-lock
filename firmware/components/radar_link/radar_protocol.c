@@ -230,6 +230,17 @@ static void complete_frame(radar_tf_decoder_t *decoder, radar_wire_event_t *even
     memset(event, 0, sizeof(*event));
     event->complete = true;
     event->type = decoder->type;
+    if (decoder->type == RADAR_TF_TYPE_ZONES) {
+        if (decoder->payload_len == 4u * RADAR_ZONE_COUNT) {
+            for (int i = 0; i < RADAR_ZONE_COUNT; ++i) {
+                const uint8_t *b = decoder->payload + 4 * i;
+                event->zone_flags[i] = (uint32_t)b[0] | ((uint32_t)b[1] << 8) |
+                                       ((uint32_t)b[2] << 16) | ((uint32_t)b[3] << 24);
+            }
+            event->has_zones = true;
+        }
+        return;
+    }
     if (decoder->type != RADAR_TF_TYPE_TARGET && decoder->type != RADAR_TF_TYPE_CLOUD) {
         return;
     }

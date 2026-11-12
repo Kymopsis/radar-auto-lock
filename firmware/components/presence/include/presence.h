@@ -23,6 +23,7 @@ typedef struct {
     float range_m;          /* a target counts when it is closer than this */
     float half_fov_deg;     /* ... and within +/- this angle of straight ahead */
     int cloud_min_points;   /* point-cloud points that count as "seen"; 0 = off */
+    bool use_radar_zones;   /* radar's own zone-presence flag (0x0A0A) counts as "seen" */
     uint32_t away_ms;       /* nobody seen this long -> lock */
     uint32_t return_ms;     /* seen continuously this long -> wake */
     bool lock_enabled;

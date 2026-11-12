@@ -13,6 +13,8 @@
 #define RADAR_TF_SOF          0x01u
 #define RADAR_TF_TYPE_TARGET  0x0A04u
 #define RADAR_TF_TYPE_CLOUD   0x0A08u
+#define RADAR_TF_TYPE_ZONES   0x0A0Au   /* u32[4]: radar's own per-zone presence flags */
+#define RADAR_ZONE_COUNT      4
 #define RADAR_TF_PAYLOAD_MAX  4096u
 #define RADAR_MAX_BLIPS       8
 #define RADAR_MAX_CLOUD       64
@@ -76,6 +78,8 @@ typedef struct {
     bool has_cloud;             /* cloud frame was structurally valid */
     int cloud_count;            /* points stored in cloud[] (in range only) */
     radar_wire_point_t cloud[RADAR_MAX_CLOUD];
+    bool has_zones;             /* zone-presence frame was exactly 4 x u32 */
+    uint32_t zone_flags[RADAR_ZONE_COUNT];
 } radar_wire_event_t;
 
 typedef enum {

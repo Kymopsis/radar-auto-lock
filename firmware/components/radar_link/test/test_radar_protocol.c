@@ -207,6 +207,26 @@ static void test_bad_checksums_unknown_and_resync(void)
     assert(feed(&decoder, bytes, recovered, &event));
 }
 
+static void test_zone_presence(void)
+{
+    radar_tf_decoder_t decoder;
+    radar_wire_event_t event;
+    uint8_t payload[16], bytes[64];
+    radar_tf_decoder_init(&decoder);
+    put_u32_le(payload, 0);
+    put_u32_le(payload + 4, 1);
+    put_u32_le(payload + 8, 0);
+    put_u32_le(payload + 12, 0);
+    size_t length = frame(bytes, RADAR_TF_TYPE_ZONES, payload, sizeof(payload));
+    assert(feed(&decoder, bytes, length, &event));
+    assert(event.type == RADAR_TF_TYPE_ZONES && event.has_zones && !event.has_target_sample);
+    assert(event.zone_flags[0] == 0 && event.zone_flags[1] == 1 && event.zone_flags[3] == 0);
+
+    length = frame(bytes, RADAR_TF_TYPE_ZONES, payload, 12);
+    assert(feed(&decoder, bytes, length, &event));
+    assert(event.type == RADAR_TF_TYPE_ZONES && !event.has_zones);
+}
+
 int main(void)
 {
     test_fragmented_2d_and_empty();
@@ -214,6 +234,7 @@ int main(void)
     test_20byte_target();
     test_nearest_cluster_wins();
     test_bad_checksums_unknown_and_resync();
+    test_zone_presence();
     puts("radar protocol tests: PASS");
     return 0;
 }

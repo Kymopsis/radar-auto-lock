@@ -6,7 +6,7 @@ with pin headers).
 ```
 PC USB port ──USB-C cable──▶ ESP32-S3 board, port "USB"   (power + keyboard)
 
-ESP32-S3 board                      AMS1117-3.3 module          60 GHz radar (MA161BT)
+ESP32-S3 board                      AMS1117-3.3 module          60 GHz radar
   5V  ───────────────────────────▶  VIN
   GND ───────────────────────────▶  GND ────────────────────▶  GND (pin 14, and pin 9)
                                     3.3V OUT ───────────────▶  3.3V (pin 13)

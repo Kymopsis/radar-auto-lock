@@ -85,6 +85,7 @@ Monitor). Type `help`.
 | `set fov 60` | 60° | Only things within ± this angle count (10–60) |
 | `set return 1000` | 1000 ms | Seen this long counts as "back" (200–5000) |
 | `set cloud 3` | 3 | Point-cloud points in the zone that count as present; 0 = targets only |
+| `set zones on` | off | Also count the radar's own zone-presence flags as present (zones as set in the radar) |
 | `set os macos` | windows | `windows`, `macos` or `linux` |
 | `set lock off` | on | Pause auto-lock (same as a short BOOT press) |
 | `set wake off` | on | Do not wake the screen when you come back |

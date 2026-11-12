@@ -39,7 +39,7 @@ Safety rules built into the firmware:
 
 | Part | Notes | Buy |
 |---|---|---|
-| 60 GHz presence & tracking radar development kit (MA161BT) | 2T2R, 120° × 120° field of view, target positions over UART | [Kymopsis](https://kymopsis.com/product/60ghz-presence-tracking-radar-development-kit/?utm_source=github&utm_medium=readme&utm_campaign=radar-auto-lock) |
+| 60 GHz presence & tracking radar development kit | 2T2R, 120° × 120° field of view, target positions over UART | [Kymopsis](https://kymopsis.com/product/60ghz-presence-tracking-radar-development-kit/?utm_source=github&utm_medium=readme&utm_campaign=radar-auto-lock) |
 | ESP32-S3 board, dual USB-C | Any ESP32-S3 DevKitC-1 style board; the case fits the N16R8 board below | [Kymopsis](https://kymopsis.com/product/esp32-s3-n16r8-development-board/?utm_source=github&utm_medium=readme&utm_campaign=radar-auto-lock) |
 | AMS1117-3.3 V module | Clean 3.3 V for the radar (it draws up to 600 mA peaks) | [Kymopsis](https://kymopsis.com/product/ams1117-3-3v-ldo-power-module/?utm_source=github&utm_medium=readme&utm_campaign=radar-auto-lock) |
 | Dupont jumper wires, F-F | 8 wires | [Kymopsis](https://kymopsis.com/product/dupont-jumper-wire-kit-120pcs/?utm_source=github&utm_medium=readme&utm_campaign=radar-auto-lock) |
